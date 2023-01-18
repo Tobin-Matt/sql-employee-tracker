@@ -1,1 +1,2 @@
-# sql-employee-tracker
+# Employee Tracker
+
