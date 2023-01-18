@@ -127,7 +127,7 @@ const promptDepartment = () => {
             if (err) {
                 console.log(err);
             }
-            console.log('Department Added');
+            console.log(`Added ${newDepartment.departmentName} to the database.`);
             startPrompts();
         })
     })
@@ -168,7 +168,7 @@ const promptRole = async () => {
             if (err) {
                 console.log(err);
             }
-            console.log('Role Added');
+            console.log(`Added ${newRole.roleName} to the database.`);
             startPrompts();
         })
     })
@@ -224,10 +224,51 @@ const promptEmployee = async () => {
             if (err) {
                 console.log(err);
             } 
-            console.log('Employee Added')
+            console.log(`Added ${newEmployee.firstName} ${newEmployee.lastName} to the database.`)
             startPrompts();
         })
     })
+}
+
+const promptUpdateEmployee = async () => {
+    const [empRows] = await db.promise().query(`SELECT id, first_name, last_name FROM employee`);
+    const empList = empRows.map(({ id, first_name, last_name }) => ({
+        name: first_name + " " + last_name,
+        value: id
+    }));
+
+    const [roleRows] = await db.promise().query(`SELECT id, title FROM roles`);
+    const roleList = roleRows.map(({ id, title }) => ({
+        name: title,
+        value: id
+    }));
+    
+    inquirer
+    .prompt([
+        {
+            type: 'list',
+            name: 'employee',
+            message: "Which employee's role do you want to update?",
+            choices: empList
+        },
+        {
+            type: 'list',
+            name: 'updatedRole',
+            message: "Which role do you want to assign to the selected employee?",
+            choices: roleList
+        }
+    ])
+    .then((updatedEmp) => {
+        db.query(`UPDATE employee SET role_id = ? WHERE id = ?`, 
+        [updatedEmp.updatedRole, updatedEmp.employee],
+        (err, res) => {
+            if (err) {
+                console.log(err);
+            }
+            console.log("Updated employee's role");
+            startPrompts();
+        });
+    });
 }
 
 startPrompts();
