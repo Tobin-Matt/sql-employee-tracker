@@ -9,9 +9,10 @@ const db = mysql.createConnection(
         password: '@f$#s&723Qf3',
         database: 'company_db'
     },
-    console.log(`Connected to the company_db database.`)    
+    console.log(`Connected to the company_db database.`)   
 );
 
+//initiate prompts for the user to navigate the database
 const startPrompts = () => {
     inquirer
     .prompt([
@@ -56,8 +57,8 @@ const startPrompts = () => {
                 console.log('Database closed!');
                 db.end()
         }
-    })
-}
+    });
+};
 
 //will return all columns in the "department" table
 const viewDepartments = () => {
@@ -67,8 +68,8 @@ const viewDepartments = () => {
         console.log('Departments:');
         console.table(results);
         startPrompts();
-    })
-}
+    });
+};
 
 //function below will display the id, title, and salary for each role along with the name of the department that role belongs to
 const viewRoles = async () => {
@@ -103,6 +104,7 @@ const viewEmployees = async () => {
     startPrompts();
 }
 
+//function to run validation for the prompts with type "input"
 const inputValidation = (input) => {
     if (input) {
         return true;
@@ -112,6 +114,7 @@ const inputValidation = (input) => {
     }
 };
 
+//prompt for user to add a department
 const promptDepartment = () => {
     inquirer
     .prompt([
@@ -133,6 +136,7 @@ const promptDepartment = () => {
     })
 }
 
+//prompt for user to add a role
 const promptRole = async () => {
     //selects the departments from the sql table and returns as an array
     const [rows] = await db.promise().query(`SELECT * FROM department`);
@@ -164,7 +168,9 @@ const promptRole = async () => {
         }
     ])
     .then((newRole) => {
-        db.query('INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)', [newRole.roleName, newRole.roleSalary, newRole.roleDepart], (err, res) => {
+        db.query('INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)', 
+        [newRole.roleName, newRole.roleSalary, newRole.roleDepart], 
+        (err, res) => {
             if (err) {
                 console.log(err);
             }
@@ -174,9 +180,11 @@ const promptRole = async () => {
     })
 }
 
+//prompt for user to add an employee
 const promptEmployee = async () => {
     //selects the roles from the sql table and returns as an array
     const [rolesRows] = await db.promise().query(`SELECT id, title FROM roles`);
+    //map through the roles array and returns as a new array with the prompt properties
     const rolesList = rolesRows.map(({ id, title }) => ({
         name: title,
         value: id
@@ -187,9 +195,7 @@ const promptEmployee = async () => {
         name: first_name + " " + last_name,
         value: id
     }))
-    //prompt user to add first and last name, their role and their manager
-    //role prompt will be a list of all roles to choose from
-    //manager prompt will be a list of employees to choose from
+
     inquirer
     .prompt([
         {
@@ -230,6 +236,7 @@ const promptEmployee = async () => {
     })
 }
 
+//prompt to update an employee's role
 const promptUpdateEmployee = async () => {
     const [empRows] = await db.promise().query(`SELECT id, first_name, last_name FROM employee`);
     const empList = empRows.map(({ id, first_name, last_name }) => ({
